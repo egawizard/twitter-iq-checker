@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NADS IQ Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .iq-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .iq-label {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .iq-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 4px;
+            transition: width 1s ease;
+            width: 0%;
+        }
+
+        .credit {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .credit a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .credit a:hover {
+            color: #764ba2;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .iq-score {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🧠</div>
+        <h1>NADS IQ Checker</h1>
+        <p class="subtitle">Check your IQ level based on your Twitter username!</p>
+        
+        <div class="input-group">
+            <div class="input-container">
+                <input type="text" id="username" placeholder="Enter Twitter username (without @)" maxlength="15">
+            </div>
+            <button class="btn" onclick="checkIQ()">Check My IQ!</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing IQ level...</p>
+        </div>
+
+        <div class="result" id="result">
+            <div class="iq-label" id="iq-label"></div>
+            <div class="iq-score" id="iq-score"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="iq-description" id="iq-description"></div>
+        </div>
+
+        <div class="credit">
+            <p>Created by <a href="https://x.com/ega_2ez4crypto" target="_blank">@ega_2ez4crypto</a></p>
+        </div>
+    </div>
+
+    <script>
+        const iqLevels = [
+            { min: 0, max: 20, label: "SUPER IDIOT", description: "Maybe you need to start learning from basics 😅", color: "#ff4757" },
+            { min: 21, max: 40, label: "HIGH LEVEL IDIOT", description: "There's still hope for improvement!", color: "#ff6b6b" },
+            { min: 41, max: 60, label: "SOMEWHAT LACKING", description: "You need some brain vitamins", color: "#ffa502" },
+            { min: 61, max: 80, label: "NOT BAD", description: "Not too bad, but could be better", color: "#ffb142" },
+            { min: 81, max: 100, label: "AVERAGE", description: "Normal like most people", color: "#2ed573" },
+            { min: 101, max: 120, label: "MONAD CURIOUS", description: "You're starting to understand the MONAD philosophy! 📈", color: "#1e90ff" },
+            { min: 121, max: 140, label: "MONAD MAXI", description: "True believer in MONAD! You see the bigger picture! 🌟", color: "#3c40c6" },
+            { min: 141, max: 150, label: "MONAD GENIUS", description: "MONAD mastermind! You understand the ultimate truth! 🧠⚡", color: "#8e44ad" }
+        ];
+
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        function generateIQ(username) {
+            const hash = hashString(username.toLowerCase());
+            const seed = (hash % 1000) / 1000;
+            
+            // Bias towards middle range for more realistic distribution
+            let iq;
+            if (seed < 0.05) {
+                iq = Math.floor(seed * 400 + 10); // Very low range
+            } else if (seed < 0.15) {
+                iq = Math.floor((seed - 0.05) * 500 + 40); // Low range
+            } else if (seed < 0.7) {
+                iq = Math.floor((seed - 0.15) * 145 + 75); // Normal range
+            } else if (seed < 0.9) {
+                iq = Math.floor((seed - 0.7) * 150 + 120); // High range
+            } else {
+                iq = Math.floor((seed - 0.9) * 100 + 140); // Genius range
+            }
+            
+            return Math.min(150, Math.max(10, iq));
+        }
+
+        function getIQLevel(iq) {
+            return iqLevels.find(level => iq >= level.min && iq <= level.max);
+        }
+
+        async function checkIQ() {
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                alert('Please enter a Twitter username!');
+                return;
+            }
+
+            if (username.length < 1 || username.length > 15) {
+                alert('Twitter username must be between 1-15 characters!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.querySelector('.btn').disabled = true;
+
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const iq = generateIQ(username);
+            const level = getIQLevel(iq);
+            
+            // Update result
+            document.getElementById('iq-label').textContent = level.label;
+            document.getElementById('iq-score').textContent = iq;
+            document.getElementById('iq-description').textContent = level.description;
+            
+            // Update progress bar
+            const percentage = (iq / 150) * 100;
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            
+            // Update colors based on IQ level
+            const result = document.getElementById('result');
+            result.style.background = `linear-gradient(45deg, ${level.color}, ${level.color}dd)`;
+            
+            // Hide loading and show result
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.querySelector('.btn').disabled = false;
+        }
+
+        // Allow Enter key to trigger check
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkIQ();
+            }
+        });
+
+        // Add some fun animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.8s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
